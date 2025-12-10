@@ -96,4 +96,33 @@ public class MFN {
         }
     }
 
+        // inner class combinatorial and binomialCoefficient
+    public static class Combinatorial {
+        public static long factorial(int n) {
+            if (n < 0) throw new IllegalArgumentException("Factorial undefined for negative numbers");
+            if (n <= 1) return 1;
+
+            long result = 1;
+            for (int i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        /**
+         * Computes Binomial Coefficient (n choose k).
+         */
+        public static long binomialCoefficient(int n, int k) {
+            if (k < 0 || k > n) return 0;
+            if (k == 0 || k == n) return 1;
+            if (k > n / 2) k = n - k;
+
+            long result = 1;
+            for (int i = 1; i <= k; i++) {
+                result = result * (n - i + 1) / i;
+            }
+            return result;
+        }
+    }
+
 }
