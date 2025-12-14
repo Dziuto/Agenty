@@ -81,23 +81,9 @@ public class MFN {
             }
             return factorial(n)/(factorial(k)*factorial(n-k));
         }
-
-        // Method to compute double factorial (2n+1)!! for use in normalCDF
-        public long doubleFactorial(int n) {
-            if (n < -1) {
-                throw new IllegalArgumentException("Double factorial is not defined for n < -1.");
-            }
-            if (n == 0 || n == -1) {
-                return 1;
-            }
-            long result = 1;
-            for (int i = n; i > 0; i -= 2) {
-                result *= i;
-            }
-            return result;
-        }
     }
 
+    // (1)
     // ??? Probability mass function
     public double[][] Pr() {
         Combinatorial combinatorial = new Combinatorial();
@@ -126,5 +112,57 @@ public class MFN {
             }
         }
         return Pr;
+    }
+
+    // (4)
+    public int calculatePathLeadTime(int[] path) {
+        int pathLeadTime = 0;
+        for (int linkIndex : path) {
+            pathLeadTime += this.L[linkIndex];
+        }
+        return pathLeadTime;
+    }
+
+    // (5)
+    public double calculatePathCapacity(int[] path, double[] X) {
+        if (path.length == 0) return 0.0;
+
+        double minCapacity = Double.MAX_VALUE;
+        for (int linkIndex : path) {
+            if (X[linkIndex] < minCapacity) {
+                minCapacity = X[linkIndex];
+            }
+        }
+        return minCapacity;
+    }
+
+    // (3)
+    public double calculatePathTransmissionTime(double d, int[] path, double[] X) {
+        double pathCapacity = calculatePathCapacity(path, X);
+
+        if (pathCapacity > 0) {
+            int pathLeadTime = calculatePathLeadTime(path);
+
+            double flowDuration = Math.ceil(d / pathCapacity);
+
+            return pathLeadTime + flowDuration;
+        } else {
+            return Double.MAX_VALUE;
+        }
+    }
+
+    // (8)
+    public double calculateNetworkTransmissionTime(double d, double[] X) {
+        double minTransmissionTime = Double.MAX_VALUE;
+
+        for (int[] path : this.MPs) {
+            // Note: The budget constraint is ignored.
+            double pathTime = calculatePathTransmissionTime(d, path, X);
+
+            if (pathTime < minTransmissionTime) {
+                minTransmissionTime = pathTime;
+            }
+        }
+        return minTransmissionTime;
     }
 }
