@@ -84,8 +84,8 @@ public class MFN {
     }
 
     // (1)
-    // ??? Probability mass function
-    public double[][] Pr() {
+    // Probability mass function
+    public double[][] PMF() {
         Combinatorial combinatorial = new Combinatorial();
 
         int maxW = 0;
@@ -164,5 +164,29 @@ public class MFN {
             }
         }
         return minTransmissionTime;
+    }
+
+    public void getMPs(String fileName) {
+        this.MPs.clear();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(fileName)))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+
+                String[] linkParts = line.split(",");
+
+                int[] path = new int[linkParts.length];
+
+                for (int i = 0; i < linkParts.length; i++) {
+                    path[i] = Integer.parseInt(linkParts[i].trim());
+                }
+
+                this.MPs.add(path);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
     }
 }
