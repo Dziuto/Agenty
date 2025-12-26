@@ -221,6 +221,40 @@ public class MFN {
         return 0.5 + (constant * expPart * sum);
     }
 
+    // Computes the approximated value of the quantile function (inverse CDF).
+    // Uses a Binary Search algorithm to find x such that |normalCDF(x) - u| <= 10^-10.
+    //
+    public static double normalICDF(double u) {
+        // Validation: Probability u must be between 0 and 1
+        if (u <= 0.0 || u >= 1.0) {
+            throw new IllegalArgumentException("Input u must be strictly between 0 and 1 for Inverse CDF.");
+        }
+
+        double min = -20.0;
+        double max = 20.0;
+        double mid = 0.0;
+        double tolerance = 1e-10; 
+
+        while (max - min > tolerance) { 
+            mid = (min + max) / 2.0;
+            double val = normalCDF(mid);
+            
+            double diff = val - u;
+            if (Math.abs(diff) <= tolerance) {
+                return mid;
+            }
+
+            if (val < u) {
+                min = mid;
+            } 
+            else {
+                max = mid;
+            }
+        }
+        
+        return mid;
+    }
+
     public void getMPs(String fileName) {
         this.MPs.clear();
 
