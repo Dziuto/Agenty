@@ -81,6 +81,18 @@ public class MFN {
             }
             return factorial(n)/(factorial(k)*factorial(n-k));
         }
+
+        public double doubleFactorial(int n) {
+            if (n < 0) return 1.0; // Handle edge case
+            if (n == 0 || n == 1) return 1.0;
+            
+            double result = 1.0;
+            // n!! = n * (n-2) * (n-4) ... 
+            for (int i = n; i > 1; i -= 2) {
+                result *= i;
+            }
+            return result;
+        }
     }
 
     // (1)
@@ -166,6 +178,55 @@ public class MFN {
         return minTransmissionTime;
     }
 
+        
+
+    // Creates an array of values of the cumulative distribution function
+    // based on an array arPMF created by formula (1)
+    public double[][] CDF(double[][] arPMF) {
+        int rows = arPMF.length;
+        int cols = arPMF[0].length;
+        double[][] cdf = new double[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            double cumulativeSum = 0.0;
+            for (int k = 0; k < cols; k++) {
+                cumulativeSum += arPMF[i][k];
+                cdf[i][k] = cumulativeSum;
+            }
+            cdf[i][cols - 1] = 1.0;
+        }
+        return cdf;
+    }
+
+    // Computes approximated value of the CDF of the standard normal distribution
+    // for n=100, based on the specific formula provided.
+    //
+    public static double normalCDF(double z) {
+        // We need an instance of Combinatorial to access doubleFactorial 
+        // (since your Combinatorial class is not static)
+        MFN.Combinatorial combinatorial = new MFN(0, new int[0], new double[0], new int[0], new double[0], new double[0]).new Combinatorial();
+        // NOTE: If you change Combinatorial to be a 'static class', you won't need the line above. 
+        // You could just call Combinatorial.doubleFactorial(k).
+        
+        double sum = 0.0;
+        int n = 100; // Fixed n=100 as per requirements
+
+        for (int k = 0; k <= n; k++) {
+            // Term: x^(2n+1) / (2n+1)!!
+            // Here, variable is z. Power is 2k+1.
+            double numerator = Math.pow(z, 2 * k + 1);
+            double denominator = combinatorial.doubleFactorial(2 * k + 1);
+            
+            sum += numerator / denominator;
+        }
+
+        // Formula: 0.5 + (1 / sqrt(2*PI)) * e^(-z^2/2) * [sum]
+        double constant = 1.0 / Math.sqrt(2 * Math.PI);
+        double expPart = Math.exp(-1.0 * (z * z) / 2.0);
+        
+        return 0.5 + (constant * expPart * sum);
+    }
+
     public void getMPs(String fileName) {
         this.MPs.clear();
 
@@ -189,4 +250,6 @@ public class MFN {
 
         }
     }
+
+
 }
