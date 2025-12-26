@@ -202,18 +202,12 @@ public class MFN {
     // for n=100, based on the specific formula provided.
     //
     public static double normalCDF(double z) {
-        // We need an instance of Combinatorial to access doubleFactorial 
-        // (since your Combinatorial class is not static)
         MFN.Combinatorial combinatorial = new MFN(0, new int[0], new double[0], new int[0], new double[0], new double[0]).new Combinatorial();
-        // NOTE: If you change Combinatorial to be a 'static class', you won't need the line above. 
-        // You could just call Combinatorial.doubleFactorial(k).
         
         double sum = 0.0;
         int n = 100; // Fixed n=100 as per requirements
 
         for (int k = 0; k <= n; k++) {
-            // Term: x^(2n+1) / (2n+1)!!
-            // Here, variable is z. Power is 2k+1.
             double numerator = Math.pow(z, 2 * k + 1);
             double denominator = combinatorial.doubleFactorial(2 * k + 1);
             
