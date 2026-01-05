@@ -179,9 +179,7 @@ public class MFN {
     }
 
         
-
-    // Creates an array of values of the cumulative distribution function
-    // based on an array arPMF created by formula (1)
+    //()
     public double[][] CDF(double[][] arPMF) {
         int rows = arPMF.length;
         int cols = arPMF[0].length;
@@ -198,14 +196,12 @@ public class MFN {
         return cdf;
     }
 
-    // Computes approximated value of the CDF of the standard normal distribution
-    // for n=100, based on the specific formula provided.
-    //
+
     public static double normalCDF(double z) {
         MFN.Combinatorial combinatorial = new MFN(0, new int[0], new double[0], new int[0], new double[0], new double[0]).new Combinatorial();
         
         double sum = 0.0;
-        int n = 100; // Fixed n=100 as per requirements
+        int n = 100; 
 
         for (int k = 0; k <= n; k++) {
             double numerator = Math.pow(z, 2 * k + 1);
@@ -214,18 +210,14 @@ public class MFN {
             sum += numerator / denominator;
         }
 
-        // Formula: 0.5 + (1 / sqrt(2*PI)) * e^(-z^2/2) * [sum]
         double constant = 1.0 / Math.sqrt(2 * Math.PI);
         double expPart = Math.exp(-1.0 * (z * z) / 2.0);
         
         return 0.5 + (constant * expPart * sum);
     }
 
-    // Computes the approximated value of the quantile function (inverse CDF).
-    // Uses a Binary Search algorithm to find x such that |normalCDF(x) - u| <= 10^-10.
-    //
+
     public static double normalICDF(double u) {
-        // Validation: Probability u must be between 0 and 1
         if (u <= 0.0 || u >= 1.0) {
             throw new IllegalArgumentException("Input u must be strictly between 0 and 1 for Inverse CDF.");
         }
@@ -253,6 +245,36 @@ public class MFN {
         }
         
         return mid;
+    }
+
+    public double[][] randomSSV(int N, double[][] arCDF) {
+        if (N <= 0) {
+            throw new IllegalArgumentException("N must be greater than 0");
+        }
+        
+        // N rows (simulations), m columns (components)
+        double[][] ssv = new double[N][this.m];
+        Random random = new Random();
+
+        for (int n = 0; n < N; n++) {
+            for (int i = 0; i < this.m; i++) { 
+                double u = random.nextDouble();
+
+                // Find min k such that arCDF[i][k] >= u
+                int stateK = 0;
+                
+                for (int k = 0; k < arCDF[i].length; k++) {
+                    if (arCDF[i][k] >= u) {
+                        stateK = k;
+                        break;
+                    }
+                }
+
+                ssv[n][i] = stateK * this.C[i];
+            }
+        }
+
+        return ssv;
     }
 
     public void getMPs(String fileName) {
