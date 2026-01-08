@@ -53,12 +53,12 @@ public class SSVGenerator extends Agent {
         return (int) MFN.getWorstCaseNormalSampleSize(epsilon, delta);
     }
 
-public void processData(String filePath, javax.swing.JTextField[] fields) {
-        System.out.println("Creating MFN object with provided parameters...");
+// Wklej to do klasy SSVGenerator w miejsce starej metody processData
+    public void processData(String filePath, javax.swing.JTextField[] fields) {
+        System.out.println("Processing data...");
 
         try {
-            // 1. Parse GUI fields to create MFN parameters
-            // Field order based on your GUI screenshot: m, W, C, L, R, rho
+            // 1. Parsowanie pól z GUI
             int m = Integer.parseInt(fields[0].getText().trim());
             int[] W = parseIntArray(fields[1].getText());
             double[] C = parseDoubleArray(fields[2].getText());
@@ -66,32 +66,44 @@ public void processData(String filePath, javax.swing.JTextField[] fields) {
             double[] R = parseDoubleArray(fields[4].getText());
             double[] rho = parseDoubleArray(fields[5].getText());
 
-            // 2. Instantiate MFN Object (The Class)
-            //
+            // 2. Utworzenie obiektu MFN i generacja wektorów
             MFN mfn = new MFN(m, W, C, L, R, rho);
+            mfn.getMPs(filePath); // Wczytanie ścieżek, potrzebne do obliczeń w MFN, ale TT też będzie tego potrzebować
             
-            // Load MPs from the selected CSV file
-            mfn.getMPs(filePath);
-            // 3. Generate SSVs using the pre-calculated N
-            //
             double[][] pmf = mfn.PMF();
             double[][] cdf = mfn.CDF(pmf);
+            
+            // Generowanie N wektorów (N obliczone w setup())
             double[][] ssvs = mfn.randomSSV((int)this.N, cdf);
-
             System.out.println("Generated " + ssvs.length + " SSVs.");
 
-            // 4. Send Message to TT Agent
-            // We usually serialize the object or send a string. 
-            // Here we send a simple string as a placeholder, or you could use setContentObject(ssvs)
+            // 3. Wysłanie pakietu danych do agenta TT
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(new AID("tt", AID.ISLOCALNAME)); // Assuming TT agent is named "tt"
-            
-            // For simplicity, we are sending a confirmation string. 
-            // In a real implementation, you would Serialize the 'ssvs' array or the 'mfn' object.
-            msg.setContent("Generated " + ssvs.length + " vectors for file: " + filePath);
-            send(msg);
+            msg.addReceiver(new AID("tt", AID.ISLOCALNAME)); // Zakładamy, że agent TT nazywa się "tt"
 
-            // 5. Wait for Response from TT
+            // Pakowanie wszystkich danych do tablicy Object[], bo nie możemy mieć osobnej klasy SimulationData
+            // Kolejność indeksów musi być taka sama przy odbiorze w TT!
+            Object[] dataPackage = new Object[8];
+            dataPackage[0] = m;           // int
+            dataPackage[1] = W;           // int[]
+            dataPackage[2] = C;           // double[]
+            dataPackage[3] = L;           // int[]
+            dataPackage[4] = R;           // double[]
+            dataPackage[5] = rho;         // double[]
+            dataPackage[6] = filePath;    // String (ścieżka do pliku MPs)
+            dataPackage[7] = ssvs;        // double[][] (wygenerowane wektory)
+
+            try {
+                msg.setContentObject(dataPackage); // Serializacja tablicy
+            } catch (java.io.IOException ex) {
+                System.err.println("Error serializing data: " + ex.getMessage());
+                return;
+            }
+            
+            send(msg);
+            System.out.println("Data package sent to TT agent.");
+
+            // 4. Oczekiwanie na wynik (niezawodność)
             addBehaviour(new CyclicBehaviour(this) {
                 public void action() {
                     MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
@@ -100,8 +112,8 @@ public void processData(String filePath, javax.swing.JTextField[] fields) {
                         String result = reply.getContent();
                         JOptionPane.showMessageDialog(null, "Reliability Result from TT: " + result);
                         
-                        // Cleanup
-                        myGui.dispose();
+                        // Koniec pracy po otrzymaniu wyniku
+                        if (myGui != null) myGui.dispose();
                         myAgent.doDelete();
                     } else {
                         block();
