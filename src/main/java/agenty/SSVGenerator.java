@@ -1,76 +1,77 @@
-package agenty;
-
 import jade.core.Agent;
-import java.util.Arrays;
+import jade.core.AID;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 public class SSVGenerator extends Agent {
+    private int N; // Number of SSVs
+    private SSVGeneratorGui myGui;
 
-    @Override
     protected void setup() {
-        System.out.println("Agent " + getLocalName() + " started.");
-
-        // 1. Retrieve arguments passed during activation (epsilon and delta)
-        //
+        // 1. Get arguments epsilon and delta
         Object[] args = getArguments();
-
         if (args != null && args.length >= 2) {
             try {
-                // Parse arguments
-                double epsilon = Double.parseDouble(args[0].toString());
-                double delta = Double.parseDouble(args[1].toString());
+                double epsilon = Double.parseDouble((String) args[0]);
+                double delta = Double.parseDouble((String) args[1]);
 
-                // 2. Check whether these values are between 0 and 1
-                //
+                // Validate range (0, 1)
                 if (epsilon <= 0 || epsilon >= 1 || delta <= 0 || delta >= 1) {
-                    System.err.println("Error: Epsilon and Delta must be strictly between 0 and 1.");
-                    System.out.println("Agent terminating due to invalid arguments.");
-                    doDelete(); // Terminate the agent
+                    System.err.println("Arguments must be between 0 and 1.");
+                    doDelete();
                     return;
                 }
 
-                System.out.println("Arguments accepted: epsilon=" + epsilon + ", delta=" + delta);
+                // Calculate N based on formula (12b) - Placeholder calculation
+                this.N = calculateN(epsilon, delta);
 
-                // 3. Determine the number N of SSVs based on formula (12b)
-                // This uses the static method implemented in MFN class.
-                //
-                long N = MFN.getWorstCaseNormalSampleSize(epsilon, delta);
-                System.out.println("Calculated Sample Size (N) based on Formula 12b: " + N);
+                // 2. Show GUI
+                myGui = new SSVGeneratorGui(this);
 
-                // --- OPTIONAL: Initialize MFN and Generate Data ---
-                // The prompt asks to determine N, but typically this agent would then 
-                // proceed to actually generate the vectors. 
-                // You would need to initialize your specific MFN data here.
-                
-                /*
-                // Example MFN initialization (Replace with your actual data/loading logic)
-                int m = 3; 
-                int[] W = {1, 1, 1}; 
-                double[] C = {10.0, 10.0, 10.0};
-                int[] L = {1, 1, 1}; 
-                double[] R = {0.9, 0.9, 0.9}; 
-                double[] rho = {0.0, 0.0, 0.0};
-
-                MFN network = new MFN(m, W, C, L, R, rho);
-                
-                // Generate the Probability Mass Function (PMF)
-                double[][] pmf = network.PMF();
-                
-                // Generate the Cumulative Distribution Function (CDF)
-                double[][] cdf = network.CDF(pmf);
-                
-                // Generate the Random System State Vectors
-                double[][] ssvs = network.randomSSV((int) N, cdf);
-                
-                System.out.println("Generated " + ssvs.length + " System State Vectors.");
-                */
-
-            } catch (NumberFormatException e) {
-                System.err.println("Error: Arguments must be valid double numbers.");
+            } catch (Exception e) {
+                System.err.println("Invalid arguments.");
                 doDelete();
             }
         } else {
-            System.err.println("Error: No arguments specified. Please pass epsilon and delta.");
+            System.err.println("Missing epsilon and delta arguments.");
             doDelete();
         }
+    }
+
+    private int calculateN(double e, double d) {
+        // Implement formula (12b) here
+        // Example: N = (int)(Math.log(2/d) / (2 * Math.pow(e, 2)));
+        return 100;
+    }
+
+    public void processData(String filePath, javax.swing.JTextField[] fields) {
+        // Create MFN object and display it (Logic simplified for brevity)
+        System.out.println("Creating MFN object with provided parameters...");
+
+        // Generate random SSVs (Placeholder for randomSSV method)
+        String ssvData = "Generated " + N + " SSVs";
+
+        // 3. Look for TT Agent and Send Message
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        AID ttAgent = new AID("TTAgent", AID.ISLOCALNAME); // Ensure TT agent name matches
+        msg.addReceiver(ttAgent);
+        msg.setContent("MFN_Params| " + filePath + " | " + ssvData);
+        send(msg);
+
+        // 4. Wait for response
+        addBehaviour(new CyclicBehaviour() {
+            public void action() {
+                MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+                ACLMessage reply = receive(mt);
+                if (reply != null) {
+                    JOptionPane.showMessageDialog(null, "Reliability Result: " + reply.getContent());
+                    myGui.dispose();
+                    doDelete(); // Terminate agent
+                } else {
+                    block();
+                }
+            }
+        });
     }
 }
