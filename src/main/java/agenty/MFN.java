@@ -301,5 +301,22 @@ public class MFN {
         }
     }
 
+    public static long getWorstCaseNormalSampleSize(double epsilon, double delta) {
+        if (epsilon <= 0 || delta <= 0 || delta >= 1) {
+            throw new IllegalArgumentException("Epsilon must be > 0 and Delta must be between 0 and 1.");
+        }
+
+        // 1. Calculate the probability argument p = 1 - delta / 2
+        double p = 1.0 - (delta / 2.0);
+
+        // 2. Calculate Inverse Normal CDF (Phi^-1) using your existing static method
+        double z = normalICDF(p);
+
+        // 3. Apply Formula (12b): n = ceil( [z / (2 * epsilon)]^2 )
+        double term = z / (2.0 * epsilon);
+        
+        // Return the result as a long integer
+        return (long) Math.ceil(Math.pow(term, 2));
+    }
 
 }
