@@ -9,9 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import lombok.Getter;
 
-@Getter
+
 public class MFN {
     //  the number of links - int m
     private int m;
@@ -290,7 +289,7 @@ public class MFN {
                 int[] path = new int[linkParts.length];
 
                 for (int i = 0; i < linkParts.length; i++) {
-                    path[i] = Integer.parseInt(linkParts[i].trim());
+                    path[i] = Integer.parseInt(linkParts[i].trim()) - 1;
                 }
 
                 this.MPs.add(path);
