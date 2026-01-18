@@ -6,27 +6,26 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 
 
 public class MFN {
-    //  the number of links - int m
+    // the number of links - int m
     private int m;
-    //  the component number vector -int[] W
+    // the component number vector -int[] W
     private int[] W;
-    //  the component capacity vector - double[] C
+    // the component capacity vector - double[] C
     private double[] C;
-    //  the lead time vector - int[] L
+    // the lead time vector - int[] L
     private int[] L;
-    //  the component reliability vector - double[] R,
+    // the component reliability vector - double[] R,
     private double[] R;
-    //  the vector of the correlation between the faults of the components - double[] rho
+    // the vector of the correlation between the faults of the components - double[] rho
     private double[] rho;
-    //  the beta vector– double[] beta
+    // the beta vector– double[] beta
     private double[] beta;
-    //  the list of minimal paths - ArrayList<int[]> MPs
+    // the list of minimal paths - ArrayList<int[]> MPs
     private ArrayList<int[]> MPs;
 
     public MFN(int m, int[] W, double[] C, int[] L, double[] R, double[] rho) {
@@ -58,6 +57,8 @@ public class MFN {
         for (int i = 0; i < m; i++) {
             this.beta[i] = 1.0 + (this.rho[i]*(1-this.R[i]))/this.R[i];
         }
+
+
     }
 
     public class Combinatorial {
@@ -82,11 +83,11 @@ public class MFN {
         }
 
         public double doubleFactorial(int n) {
-            if (n < 0) return 1.0; // Handle edge case
+            if (n < 0) return 1.0; 
             if (n == 0 || n == 1) return 1.0;
             
             double result = 1.0;
-            // n!! = n * (n-2) * (n-4) ... 
+            // n!!=n*(n-2)*(n-4) ...
             for (int i = n; i > 1; i -= 2) {
                 result *= i;
             }
@@ -106,7 +107,7 @@ public class MFN {
 
         double[][] Pr = new double[this.m][maxW + 1];
 
-        for (int i = 0; i < this.m; i++) { // For each link i
+        for (int i = 0; i < this.m; i++) { 
             int wi = this.W[i];
             double ri = this.R[i];
             double betai = this.beta[i];
@@ -167,7 +168,6 @@ public class MFN {
         double minTransmissionTime = Double.MAX_VALUE;
 
         for (int[] path : this.MPs) {
-            // Note: The budget constraint is ignored.
             double pathTime = calculatePathTransmissionTime(d, path, X);
 
             if (pathTime < minTransmissionTime) {
@@ -251,15 +251,12 @@ public class MFN {
             throw new IllegalArgumentException("N must be greater than 0");
         }
         
-        // N rows (simulations), m columns (components)
         double[][] ssv = new double[N][this.m];
         Random random = new Random();
 
         for (int n = 0; n < N; n++) {
             for (int i = 0; i < this.m; i++) { 
                 double u = random.nextDouble();
-
-                // Find min k such that arCDF[i][k] >= u
                 int stateK = 0;
                 
                 for (int k = 0; k < arCDF[i].length; k++) {
@@ -285,7 +282,6 @@ public class MFN {
             while ((line = br.readLine()) != null) {
 
                 String[] linkParts = line.split(",");
-
                 int[] path = new int[linkParts.length];
 
                 for (int i = 0; i < linkParts.length; i++) {
@@ -305,16 +301,10 @@ public class MFN {
             throw new IllegalArgumentException("Epsilon must be > 0 and Delta must be between 0 and 1.");
         }
 
-        // 1. Calculate the probability argument p = 1 - delta / 2
         double p = 1.0 - (delta / 2.0);
-
-        // 2. Calculate Inverse Normal CDF (Phi^-1) using your existing static method
         double z = normalICDF(p);
-
-        // 3. Apply Formula (12b): n = ceil( [z / (2 * epsilon)]^2 )
         double term = z / (2.0 * epsilon);
         
-        // Return the result as a long integer
         return (long) Math.ceil(Math.pow(term, 2));
     }
 

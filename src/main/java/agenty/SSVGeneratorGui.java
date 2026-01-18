@@ -2,7 +2,6 @@ package agenty;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 
 public class SSVGeneratorGui extends JFrame {
     private SSVGenerator myAgent;
@@ -16,7 +15,6 @@ public class SSVGeneratorGui extends JFrame {
 
         JPanel mainPanel = new JPanel(new GridLayout(0, 1));
 
-        // File selection
         JButton fileBtn = new JButton("Choose .csv File");
         JLabel fileLabel = new JLabel("No file selected");
         fileBtn.addActionListener(e -> {
@@ -30,7 +28,6 @@ public class SSVGeneratorGui extends JFrame {
         mainPanel.add(fileBtn);
         mainPanel.add(fileLabel);
 
-        // Parameter fields
         for (int i = 0; i < labels.length; i++) {
             mainPanel.add(new JLabel(labels[i]));
             params[i] = new JTextField();
@@ -39,7 +36,6 @@ public class SSVGeneratorGui extends JFrame {
 
         JButton sendBtn = new JButton("Send Data");
         sendBtn.addActionListener(e -> {
-            // Collect data and trigger agent logic
             myAgent.processData(selectedFilePath, params);
         });
 
