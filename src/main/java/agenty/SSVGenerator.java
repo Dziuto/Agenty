@@ -60,6 +60,13 @@ public class SSVGenerator extends Agent {
             MFN mfn = new MFN(m, W, C, L, R, rho);
 
             mfn.getMPs(filePath); 
+
+            System.out.println("MFN has been created: \n" +
+               "W= " + Arrays.toString(W) + "\n" +
+               "C= " + Arrays.toString(C) + "\n" +
+               "L= " + Arrays.toString(L) + "\n" +
+               "R= " + Arrays.toString(R) + "\n" +
+               "rho= " + Arrays.toString(rho));
             
             double[][] pmf = mfn.PMF();
             double[][] cdf = mfn.CDF(pmf);
